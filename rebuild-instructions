@@ -28,12 +28,12 @@ echo "dtoverlay=spi-bcm2835-overlay" >> /boot/config.txt
 echo "dtoverlay=spi-dma-overlay" >> /boot/config.txt
 
 # add to /etc/network/interfaces
-echo "auto can0" >> /etc/network/interfaces
-echo "iface can0 inet manual" >> /etc/network/interfaces
-# 100kbs (info bus) ###
-echo " pre-up ip link set $IFACE type can bitrate 100000 listen-only off triple-sampling on" >> /etc/network/interfaces
-echo " up /sbin/ifconfig $IFACE up" >> /etc/network/interfaces
-echo " down /sbin/ifconfig $IFACE down" >> /etc/network/interfaces
+auto can0
+Iface can0 inet manual
+#                                           100kbs (info bus) ###
+ pre-up ip link set $IFACE type can bitrate 100000 listen-only off triple-sampling on
+ up /sbin/ifconfig $IFACE up
+ down /sbin/ifconfig $IFACE down
 
 
 # add following to /etc/rc.local above the line exit 0
