@@ -1,0 +1,122 @@
+setting up raspberry pi
+
+## run as root
+
+# remove unneeded packages
+# some packages not in as standard now
+apt remove --purge scratch minecraft-pi sonic-pi dillo gpicview penguinspuzzle Wolfram-engine libreoffice
+apt-get clean && sudo apt-get autoremove
+apt update
+apt upgrade
+
+# install packages
+apt install can-utils wireshark gpsd gspd-clients
+
+apt install realvnc-vnc-server
+
+# enable boot scripts
+systemctl enable gpsd
+
+# for tmpfs /tmp
+cp /usr/share/systemd/tmp.mount /etc/systemd/system/tmp.mount
+systemctl enalbe tmp.mount
+
+
+# add needed to /boot/config.txt
+sed 's/#dtparam=spi=on/dtparam=spi=on/' -i /boot/config.txt
+echo "dtoverlay=mcp2515-can0,oscillator=16000000,interrupt=25" >> /boot/config.txt
+echo "dtoverlay=spi-bcm2835-overlay" >> /boot/config.txt
+echo "dtoverlay=spi-dma-overlay" >> /boot/config.txt
+
+# add to /etc/network/interfaces
+echo "auto can0" >> /etc/network/interfaces
+echo "iface can0 inet manual" >> /etc/network/interfaces
+# 100kbs (info bus) ###
+echo " pre-up ip link set $IFACE type can bitrate 100000 listen-only off triple-sampling on" >> /etc/network/interfaces
+echo " up /sbin/ifconfig $IFACE up" >> /etc/network/interfaces
+echo " down /sbin/ifconfig $IFACE down" >> /etc/network/interfaces
+
+
+# add following to /etc/rc.local above the line exit 0
+# add vcan
+modprobe vcan
+ip link add dev vcan0 type vcan
+ip link set up vcan0
+
+# set txqueuelen for can0
+ifconfig can0 txqueuelen 1000
+
+# reboot at this point
+
+## not needed as added to rc.local
+## if get a "write: No buffer space available" error sending on CANBUS use
+#sudo ifconfig can0 txqueuelen 1000
+
+sudo -H pip3 install gps3
+sudo -H pip3 install python-can
+
+
+##### edit /etc/defaults/gpsd
+change device to required /dev/?????, for mine /dev/ttyUSB0
+DEVICE=/dev/ttyUSB0
+
+
+##### for bluetooth (using raspbian stretch)
+following  instructions at https://volumio.org/forum/volumio-bluez-alsa-a2dp-bluetooth-support-t6130.html
+commented out orginal lines and made changes
+
+>>> /lib/systemd/system/bluealsa-aplay@.service
+[Unit]
+#Description=BlueAlsa-Aplay %I -dhw:1,0
+Description=BlueAlsa-Aplay %I
+Requires=bluetooth.service bluealsa.service
+[Service]
+Type=simple
+User=pi
+Group=audio
+#ExecStart=/usr/bin/bluealsa-aplay %I -dhw:1,0
+ExecStart=/usr/bin/bluealsa-aplay %I
+[Install]
+WantedBy=multi-user.target
+
+>>> /etc/udev/rules.d/99-input.rules
+#KERNEL=="input[0-9]*", RUN+="/home/volumio/a2dp-autoconnect"
+KERNEL=="input[0-9]*", RUN+="/home/pi/a2dp-autoconnect"
+
+
+>>> /home/pi/a2dp-autoconnect
+
+#!/bin/bash
+# at each BT connection/disconnection start/stop the service bluealsa-aplay
+function log {
+#        sudo echo "[$(date)]: $*" >> /var/log/a2dp-autoconnect
+        sudo echo "[$(date)]: $*" >> /home/pi/a2dp-autoconnect.log
+}
+BTMAC=${NAME//\"/}
+if [ $ACTION = "remove" ]
+then
+        log "Stop Played Connection " $BTMAC
+        sudo systemctl stop bluealsa-aplay@$BTMAC
+elif [ $ACTION = "add" ]
+then
+        log "Start Played Connection " $BTMAC
+        sudo systemctl start bluealsa-aplay@$BTMAC
+else
+        log "Other action " $ACTION
+fi
+
+
+use bluetoothctl and add following
+power on
+discoverable on
+pairable on
+agent on
+default-agent
+
+connect with device to pi
+
+then yes when asked to authorise
+
+then type 'trust' on bluetootctl.
+
+stream some music.
