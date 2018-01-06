@@ -4,10 +4,10 @@ GPS to google maps tracker
 '''
 
 ''' user varibles '''
-working_dir   = ""
-out_file_name = ""
-log_dir       = ""
-log_file_name = ""
+working_dir   = "/home/pi"
+out_file_name = "journey"
+log_dir       = "/home/pi"
+log_file_name = "tracker.log"
 
 ''' imports '''
 
@@ -23,7 +23,7 @@ refresh_rate = 1.0
 agps_thread = AGPS3mechanism()
 agps_thread.stream_data()
 agps_thread.run_thread()
-out_file_name = out_file_name + str(datetime.datetime.now().strftime("%Y%m%d_%H%M")) + ".kml"
+out_file_name = out_file_name + "-" + str(datetime.datetime.now().strftime("%Y%m%d_%H%M")) + ".kml"
 
 
 ''' functions '''
@@ -80,7 +80,7 @@ def print_error(ex="Error", linenumber=0, message="There has been an error"):
     '''
     line = str(datetime.datetime.now()) + " @ " + str(linenumber) + " : " + str(ex) + " : " + str(message + "\n")
     try:
-        with open(logile_dir + logfile_name, "a") as error_file:
+        with open(logile_dir + "/" + logfile_name, "a") as error_file:
             error_file.write(line)
     except:
         print("ERROR WRITING TO FILE > ", line)
@@ -89,7 +89,7 @@ def print_error(ex="Error", linenumber=0, message="There has been an error"):
 if __name__ == '__main__':
     try:
         print("create file")
-        with open(working_dir + out_file_name, "w") as outfile:
+        with open(working_dir + "/" + out_file_name, "w") as outfile:
             outfile.writelines(create_header())
             print(create_header())
             while True:
