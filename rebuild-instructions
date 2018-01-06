@@ -10,9 +10,8 @@ apt update
 apt upgrade
 
 # install packages
-apt install can-utils wireshark gpsd gspd-clients
-
-apt install realvnc-vnc-server
+apt install can-utils wireshark gpsd
+apt install gpsd-clients
 
 # enable boot scripts
 systemctl enable gpsd
