@@ -10,10 +10,7 @@ uses:
 '''
 
 ''' User Defineable Script Varibles '''
-
-''' needs trailing slash '''
-working_dir = "/tmp/"
-
+working_dir = "/tmp"
 logfile_dir = ""
 logfile_name = "logfile.log"
 
@@ -57,7 +54,7 @@ def print_error(ex="Error", linenumber=0, message="There has been an error"):
     '''
     line = str(datetime.datetime.now()) + " @ " + str(linenumber) + " : " + str(ex) + " : " + str(message + "\n")
     try:
-        with open(logile_dir + logfile_name, "a") as error_file:
+        with open(logile_dir + "/" + logfile_name, "a") as error_file:
             error_file.write(line)
     except:
         print("ERROR WRITING TO FILE > ", line)
@@ -117,7 +114,7 @@ if __name__ == '__main__':
 
             # print("write to temp file")
             try:
-                with open(working_dir + cansendfile_name, "w") as canfile:
+                with open(working_dir + "/" + cansendfile_name, "w") as canfile:
                     outlines = roadName + "\n" + speedLine
                     canfile.writelines(outlines)
             except Exception as ex:
