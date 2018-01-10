@@ -8,8 +8,7 @@ uses:
 
 ''' User varibles '''
 
-''' requires trailing slash '''
-working_dir = "/tmp/"
+working_dir = "/tmp"
 datafile    = "cansend.dat"
 logfile_dir = "/media/pi/DISK_IMG"
 logfile     = "cansend.log"
@@ -40,7 +39,7 @@ def print_error(ex="Error", linenumber=0, message="There has been an error"):
     '''
     line = str(datetime.datetime.now()) + " @ " + str(linenumber) + " : " + str(ex) + " : " + str(message + "\n")
     try:
-        with open(logile_dir + logfile_name, "a") as error_file:
+        with open(logile_dir + "/" + logfile_name, "a") as error_file:
             error_file.write(line)
     except:
         print("ERROR WRITING TO FILE > ", line)
@@ -119,7 +118,7 @@ if __name__ == '__main__':
     while True:
         try:
             time.sleep(can_refresh_rate)
-            with open(working_dir + datafile, "r") as canfile:
+            with open(working_dir + "/" + datafile, "r") as canfile:
                 #print("File loaded")
                 #print("Reset file searching delay")
                 timeout = 0
