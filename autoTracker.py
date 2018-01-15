@@ -7,7 +7,7 @@ import math
 
 from gps3.agps3threaded import AGPS3mechanism
 
-can_interface = "vcan0"
+can_interface = "can0"
 iginition_code = 0x151
 iginition_off_delay = 30
 iginition_delay = 0
