@@ -7,15 +7,15 @@ import math
 
 from gps3.agps3threaded import AGPS3mechanism
 
-can_interface = "can0"
+can_interface = "vcan0"
 iginition_code = 0x151
-iginition_off_delay = 5
+iginition_off_delay = 30
 iginition_delay = 0
 
-workingdir = "/media/pi/DISK_IMG"
-kmlfile_name = str(datetime.datetime.now().strftime("%Y%m%d_%H%M")) + ".kml"
+workingdir = "/home/pi/dashNav"
+#kmlfile_name = str(datetime.datetime.now().strftime("%Y%m%d_%H%M")) + ".kml"
 
-mph_ratio = 10
+mph_ratio = 1
 
 can_bus_refresh_rate = 0.1
 can_bus = can.interface.Bus(can_interface, bustype='socketcan_native', can_filters=[{"can_id": iginition_code, "can_mask": 0xFFFFFFF}])
@@ -71,7 +71,7 @@ def header():
     			<extrude>1</extrude>
     			<tessellate>1</tessellate>
     			<altitudeMode>relativeToGround</altitudeMode>
-    			<coordinates>"""
+    			<coordinates>\n"""
 
     return header
 
@@ -90,7 +90,7 @@ def footer():
     return footer
 
 
-def open_kml_file():
+def open_kml_file(kmlfile_name = str(datetime.datetime.now().strftime("%Y%m%d_%H%M")) + ".kml"):
     kmlfile = None
     try:
         kmlfile = open(workingdir + "/" + kmlfile_name, "w")
@@ -110,7 +110,7 @@ def main():
     iginition_delay = 0
     try:
         while True:
-            print("Wait for ignition")
+            #print("Wait for ignition")
             try:
                 can_message = can_bus.recv(can_bus_refresh_rate)
             except KeyboardInterrupt:
@@ -123,7 +123,8 @@ def main():
             except Exception as expt:
                 tb = sys.exc_info()[2]
                 print_error(str(expt), tb, "Can Error")
-            print("CAN Message")
+
+            #print("CAN Message")
             if can_message:
                 if can_message.arbitration_id == iginition_code:
                     iginition_delay = 0
@@ -131,23 +132,27 @@ def main():
                     iginition = True
                     print("check for open file")
                     if 'kmlfile' not in locals():
-                        kmlfile = open_kml_file()
+                        kmlfile = open_kml_file(kmlfile_name = str(datetime.datetime.now().strftime("%Y%m%d_%H%M")) + ".kml")
                         if kmlfile == None:
                             continue
                     print("check for gps")
                     if agps_thread.data_stream.lat != "n/a" and agps_thread.data_stream.lon != "n/a":
                         currentSpeed = math.ceil(agps_thread.data_stream.speed * 2.23694)
-                        line = "\t\t\t\t" + agps_thread.data_stream.lat + "," + agps_thread.data_stream.lon, + "," + str(math.ceil(currentSpeed * mph_ratio))
+                        line = "\t\t\t\t" + str(agps_thread.data_stream.lat) + "," + str(agps_thread.data_stream.lon) + "," + str(math.ceil(currentSpeed * mph_ratio)) + "\n"
                         print(line)
                         if not kmlfile.closed:
-                            kmlfile.writelines(line)
+                            try:
+                                kmlfile.writelines(line)
+                            except  Exception as expt:
+                                tb = sys.exc_info()[2]
+                                print_error(str(expt), tb, str("File Error" + kmlfile))
             else:
                 if 'kmlfile' in locals():
-                    print(kmlfile)
+                    #print(kmlfile)
                     if not kmlfile.closed:
                         iginition_delay = iginition_delay + 1
-                        print(iginition_delay)
-                        print(iginition_delay, ">", iginition_off_delay)
+                        #print(iginition_delay)
+                        #print(iginition_delay, ">", iginition_off_delay)
                         if iginition_delay > iginition_off_delay:
                             print("Close file")
                             ''' resset counters '''
