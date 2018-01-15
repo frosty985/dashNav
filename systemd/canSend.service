@@ -1,0 +1,16 @@
+[Unit]
+Description=canSend.py Script to send info along canbus
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /home/pi/dashNav/canSend.py
+WorkingDirectory=/home/pi/dashNav
+#StandardOutput=inherit
+#StandardInput=inherit
+Restart=always
+User=pi
+Group=pi
+
+[Install]
+WantedBy=multi-user.target
