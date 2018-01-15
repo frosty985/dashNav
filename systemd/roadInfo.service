@@ -1,0 +1,16 @@
+[Unit]
+Description=roadInfo.py Script to get current location
+After=gpsd.service multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /home/pi/dashNav/roadInfo.py
+WorkingDirectory=/home/pi/dashNav
+#StandardOutput=inherit
+#StandardInput=inherit
+Restart=always
+User=pi
+Group=pi
+
+[Install]
+WantedBy=multi-user.target
